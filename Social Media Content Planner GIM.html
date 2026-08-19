@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Social Media Content Planner GIM • PT Geo Investama Mandiri</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              buffer: '#2C4BFF'
+            },
+            app: {
+              darkBg: '#0B0F17',
+              darkSurface: '#151C28',
+              darkSurfaceLight: '#1E2738',
+              darkCard: '#1F293D',
+              darkCardHover: '#28354E',
+              darkBorder: '#2B384E',
+              darkBorderLight: '#3B4D6B',
+              darkText: '#F8FAFC',
+              darkMuted: '#94A3B8',
+              
+              lightBg: '#F1F5F9',
+              lightSurface: '#FFFFFF',
+              lightSurfaceLight: '#F8FAFC',
+              lightCard: '#FFFFFF',
+              lightCardHover: '#F1F5F9',
+              lightBorder: '#E2E8F0',
+              lightBorderLight: '#CBD5E1',
+              lightText: '#0F172A',
+              lightMuted: '#475569',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', '-apple-system', 'sans-serif']
+          },
+          boxShadow: {
+            'glow-blue': '0 0 25px rgba(37, 99, 235, 0.45)',
+            'glow-card': '0 12px 35px rgba(0, 0, 0, 0.35)',
+            'buffer-btn': '0 4px 14px rgba(44, 75, 255, 0.35)'
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      box-sizing: border-box;
+    }
+    
+    body {
+      transition: background-color 0.2s ease, color 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .dark .ambient-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: 
+        radial-gradient(700px circle at 85% 15%, rgba(37, 99, 235, 0.12), transparent 70%),
+        radial-gradient(800px circle at 15% 85%, rgba(139, 92, 246, 0.08), transparent 70%);
+      z-index: 0;
+    }
+
+    .light .ambient-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: 
+        radial-gradient(700px circle at 85% 15%, rgba(37, 99, 235, 0.05), transparent 70%),
+        radial-gradient(800px circle at 15% 85%, rgba(203, 213, 225, 0.4), transparent 70%);
+      z-index: 0;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 999px;
+    }
+    .light .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 999px;
+    }
+
+    /* Today's Special Glow Highlight */
+    .today-highlight-cell {
+      box-shadow: 0 0 0 2px #2563EB, 0 0 15px rgba(37, 99, 235, 0.35) !important;
+    }
+    .dark .today-highlight-cell {
+      background: rgba(30, 58, 138, 0.35) !important;
+      border-color: #3B82F6 !important;
+    }
+    .light .today-highlight-cell {
+      background: #EFF6FF !important;
+      border-color: #2563EB !important;
+    }
+
+    .dark .selected-day-border {
+      border: 2px dashed #60A5FA !important;
+    }
+    .light .selected-day-border {
+      border: 2px dashed #2563EB !important;
+    }
+
+    .buffer-slot-add {
+      opacity: 0;
+      transform: scale(0.92);
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .calendar-cell:hover .buffer-slot-add {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Mobile calendar cell responsive adjustments */
+    @media (max-width: 640px) {
+      .calendar-cell {
+        min-height: 72px !important;
+        padding: 4px !important;
+      }
+      .buffer-slot-add {
+        opacity: 0.85 !important;
+        display: none !important;
+      }
+    }
+
+    select option {
+      background-color: #1E2738;
+      color: #F8FAFC;
+    }
+    .light select option {
+      background-color: #FFFFFF;
+      color: #0F172A;
+    }
+  </style>
+</head>
+<body class="bg-app-lightBg dark:bg-app-darkBg text-app-lightText dark:text-app-darkText antialiased p-1.5 sm:p-4 lg:p-6 flex items-center justify-center min-h-screen">
+
+  <div class="ambient-glow"></div>
+
+  <!-- Main App Shell Container -->
+  <div class="relative z-10 w-full max-w-[1580px] bg-app-lightSurface dark:bg-app-darkSurface border border-app-lightBorder dark:border-app-darkBorder rounded-[20px] sm:rounded-[32px] shadow-glow-card overflow-hidden flex flex-col md:flex-row min-h-[850px] transition-colors duration-200">
+    
+    <!-- LEFT FLOATING DOCK SIDEBAR -->
+    <aside class="w-full md:w-20 bg-app-lightSurfaceLight dark:bg-[#0E131D] md:border-r border-b md:border-b-0 border-app-lightBorder dark:border-app-darkBorder flex md:flex-col items-center justify-between p-2.5 sm:p-4 z-20">
+      
+      <div class="flex md:flex-col items-center gap-3 sm:gap-6">
+        
+        <!-- Official G Logo on Left Sidebar -->
+        <div onclick="window.location.reload()" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white dark:bg-[#151D2A] border border-slate-200 dark:border-slate-700 p-1 sm:p-1.5 shadow-md flex items-center justify-center cursor-pointer hover:scale-105 transition shrink-0" title="PT Geo Investama Mandiri">
+          <img src="logo.png" alt="PT GIM Logo" class="w-full h-full object-contain drop-shadow-sm">
+        </div>
+
+        <!-- Dock Nav Icons -->
+        <nav class="flex md:flex-col items-center gap-1.5 sm:gap-3">
+          
+          <button onclick="setViewMode('calendar')" id="nav-btn-calendar" title="Calendar View (Kalender)" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-brand-500 text-white flex items-center justify-center shadow-glow-blue transition duration-200 cursor-pointer">
+            <i data-lucide="calendar" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          </button>
+
+          <button onclick="setViewMode('kanban')" id="nav-btn-kanban" title="Kanban Board (Papan Alur)" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-app-darkSurfaceLight flex items-center justify-center transition duration-200 cursor-pointer">
+            <i data-lucide="layout-grid" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          </button>
+
+          <button onclick="setViewMode('table')" id="nav-btn-table" title="Data Table (Daftar Tabel)" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-app-darkSurfaceLight flex items-center justify-center transition duration-200 cursor-pointer">
+            <i data-lucide="table-2" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          </button>
+
+          <button onclick="setViewMode('analytics')" id="nav-btn-analytics" title="Statistics & Insights (Analisis)" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-app-darkSurfaceLight flex items-center justify-center transition duration-200 cursor-pointer">
+            <i data-lucide="pie-chart" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+          </button>
+
+          <button onclick="syncWithGoogleSheet()" title="Sync Google Sheets" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl text-emerald-500 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 border border-emerald-500/30 flex items-center justify-center transition duration-200 cursor-pointer">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 sm:w-4 sm:h-4" id="sidebar-sync-icon"></i>
+          </button>
+
+        </nav>
+      </div>
+
+      <!-- Bottom Actions -->
+      <div class="flex md:flex-col items-center gap-2 sm:gap-3">
+        
+        <!-- Dark/Light Mode Switcher -->
+        <button onclick="toggleTheme()" title="Toggle Dark/Light Mode" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-slate-100 dark:bg-app-darkSurfaceLight border border-app-lightBorder dark:border-app-darkBorder flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-brand-400 transition cursor-pointer">
+          <i data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
+          <i data-lucide="moon" class="w-4 h-4 block dark:hidden text-indigo-600"></i>
+        </button>
+
+        <!-- CSV Export -->
+        <button onclick="exportToCSV()" title="Export CSV" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-app-darkSurfaceLight flex items-center justify-center transition cursor-pointer hidden sm:flex">
+          <i data-lucide="download" class="w-4 h-4"></i>
+        </button>
+        
+        <!-- Quick Create Post Plus Button -->
+        <div class="cursor-pointer" onclick="openNewPostModal()" title="Create New Post">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 p-[1.5px] shadow-buffer-btn hover:scale-105 transition">
+            <div class="w-full h-full rounded-[10px] sm:rounded-[14px] bg-white dark:bg-app-darkBg flex items-center justify-center text-brand-600 dark:text-white font-bold text-base sm:text-lg">
+              +
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- CENTER & MAIN CONTENT AREA -->
+    <div class="flex-1 flex flex-col min-w-0 bg-white dark:bg-app-darkSurface">
+      
+      <!-- TOP HEADER WITH LOGO BRANDING -->
+      <header class="px-4 sm:px-8 py-3.5 sm:py-5 border-b border-app-lightBorder dark:border-app-darkBorder flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        
+        <!-- Brand & Title Header -->
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white dark:bg-[#18202E] border border-slate-200 dark:border-slate-700 p-1 shadow-xs flex items-center justify-center shrink-0">
+            <img src="logo.png" alt="PT Geo Investama Mandiri" class="w-full h-full object-contain">
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-base sm:text-xl font-black tracking-tight text-slate-900 dark:text-white">
+                Content Planner 2026
+              </h1>
+              <span class="px-2 py-0.5 text-[10px] sm:text-[11px] font-bold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800">PT GIM</span>
+            </div>
+            <p class="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-app-darkMuted">
+              Editorial Calendar & Multi-channel Publishing
+            </p>
+          </div>
+        </div>
+
+        <!-- Search Bar & Create Post Button -->
+        <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          
+          <div class="relative flex-1 sm:w-60">
+            <i data-lucide="search" class="w-3.5 h-3.5 sm:w-4 sm:h-4 absolute left-3 top-2.5 sm:top-3 text-slate-400"></i>
+            <input 
+              type="text" 
+              id="search-input" 
+              oninput="onSearchInput()"
+              placeholder="Cari konten, brand..." 
+              class="w-full bg-slate-50 dark:bg-app-darkSurfaceLight border border-app-lightBorder dark:border-app-darkBorder rounded-full pl-9 sm:pl-10 pr-3 py-1.5 sm:py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-500 font-medium"
+            >
+          </div>
+
+          <button onclick="openNewPostModal()" class="px-3.5 sm:px-5 py-1.5 sm:py-2.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-buffer-btn shrink-0 cursor-pointer">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+            <span class="hidden sm:inline">Create Post</span>
+            <span class="sm:hidden">Post</span>
+          </button>
+
+        </div>
+
+      </header>
+
+      <!-- SUB-BAR: MONTH & YEAR CONTROLS + REAL-TIME CLOCK + FILTERS -->
+      <div class="px-4 sm:px-8 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-app-lightBorder dark:border-app-darkBorder/60 bg-slate-50/70 dark:bg-app-darkBg/40">
+        
+        <!-- Left: Month Controls + Live Clock -->
+        <div class="flex items-center justify-between sm:justify-start gap-2 flex-wrap">
+          
+          <!-- Month & Year Selector -->
+          <div class="flex items-center gap-1.5 bg-white dark:bg-[#1E2738] border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs shadow-xs">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-brand-500 shrink-0"></i>
+            <select id="month-select" onchange="onMonthSelect(this.value)" class="bg-white dark:bg-[#1E2738] font-black text-slate-900 dark:text-white pr-1 py-0.5 focus:outline-none cursor-pointer border-none text-xs">
+              <!-- Populated via JS -->
+            </select>
+            <span class="text-slate-300 dark:text-slate-600">•</span>
+            <span class="font-black text-slate-900 dark:text-white">2026</span>
+          </div>
+
+          <!-- Stepper Buttons -->
+          <div class="flex items-center gap-1">
+            <button onclick="changeMonth(-1)" class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white dark:bg-[#1E2738] border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:text-brand-500 shadow-xs transition cursor-pointer" title="Bulan Sebelumnya">
+              <i data-lucide="chevron-left" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+            </button>
+            <button onclick="changeMonth(1)" class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white dark:bg-[#1E2738] border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:text-brand-500 shadow-xs transition cursor-pointer" title="Bulan Berikutnya">
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+            </button>
+          </div>
+
+          <!-- Real-Time Digital Clock (Jam Menit Detik) -->
+          <div class="flex items-center gap-1.5 sm:gap-2 bg-white dark:bg-[#1E2738] border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs shadow-xs">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span id="realtime-clock" class="font-mono font-black text-slate-900 dark:text-white tracking-wider text-[11px] sm:text-xs">
+              00:00:00 WIB
+            </span>
+          </div>
+
+        </div>
+
+        <!-- Filter Pill Tabs (Smooth Horizontal Scroll on Mobile) -->
+        <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5 max-w-full">
+          <button onclick="setCategoryFilter('ALL')" id="filter-pill-ALL" class="px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-brand-500 text-white transition shrink-0 cursor-pointer">
+            All
+          </button>
+          <button onclick="setCategoryFilter('Holiday')" id="filter-pill-Holiday" class="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-white dark:bg-[#1E2738] text-slate-700 dark:text-slate-300 hover:text-white border border-slate-200 dark:border-slate-700 transition shrink-0 cursor-pointer">
+            🔴 Holiday
+          </button>
+          <button onclick="setCategoryFilter('Promo')" id="filter-pill-Promo" class="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-white dark:bg-[#1E2738] text-slate-700 dark:text-slate-300 hover:text-white border border-slate-200 dark:border-slate-700 transition shrink-0 cursor-pointer">
+            🟠 Promo
+          </button>
+          <button onclick="setCategoryFilter('Education')" id="filter-pill-Education" class="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-white dark:bg-[#1E2738] text-slate-700 dark:text-slate-300 hover:text-white border border-slate-200 dark:border-slate-700 transition shrink-0 cursor-pointer">
+            🔵 Education
+          </button>
+          <button onclick="setCategoryFilter('Webinar')" id="filter-pill-Webinar" class="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-white dark:bg-[#1E2738] text-slate-700 dark:text-slate-300 hover:text-white border border-slate-200 dark:border-slate-700 transition shrink-0 cursor-pointer">
+            🟣 Webinar
+          </button>
+          <button onclick="setCategoryFilter('Product')" id="filter-pill-Product" class="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-white dark:bg-[#1E2738] text-slate-700 dark:text-slate-300 hover:text-white border border-slate-200 dark:border-slate-700 transition shrink-0 cursor-pointer">
+            🟢 Product
+          </button>
+        </div>
+
+      </div>
+
+      <!-- MAIN CONTENT WRAPPER -->
+      <div class="flex-1 p-3 sm:p-6 lg:p-8 overflow-y-auto custom-scrollbar">
+        
+        <!-- 1. CALENDAR VIEW -->
+        <div id="view-calendar" class="space-y-2 sm:space-y-3">
+          
+          <!-- Days of Week Header -->
+          <div class="grid grid-cols-7 gap-1 sm:gap-2.5 text-center text-[10px] sm:text-xs font-black uppercase tracking-wider pb-1">
+<div class="text-rose-600 dark:text-rose-400"><span class="hidden sm:inline">Sunday</span><span class="sm:hidden">Su</span></div>
+<div class="text-slate-700 dark:text-slate-300"><span class="hidden sm:inline">Monday</span><span class="sm:hidden">Mo</span></div>
+<div class="text-slate-700 dark:text-slate-300"><span class="hidden sm:inline">Tuesday</span><span class="sm:hidden">Tu</span></div>
+<div class="text-slate-700 dark:text-slate-300"><span class="hidden sm:inline">Wednesday</span><span class="sm:hidden">We</span></div>
+<div class="text-slate-700 dark:text-slate-300"><span class="hidden sm:inline">Thursday</span><span class="sm:hidden">Th</span></div>
+<div class="text-slate-700 dark:text-slate-300"><span class="hidden sm:inline">Friday</span><span class="sm:hidden">Fr</span></div>
+<div class="text-sky-600 dark:text-sky-400"><span class="hidden sm:inline">Saturday</span><span class="sm:hidden">Sa</span></div>
+          </div>
+
+          <!-- Calendar Grid Cells -->
+          <div id="calendar-grid" class="grid grid-cols-7 gap-1 sm:gap-2.5 min-h-[480px] sm:min-h-[580px]">
+            <!-- Injected via JavaScript -->
+          </div>
+
+        </div>
+
+        <!-- 2. KANBAN BOARD VIEW -->
+        <div id="view-kanban" class="hidden">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            
+            <!-- Planned -->
+            <div class="bg-slate-50 dark:bg-[#111722] border border-app-lightBorder dark:border-app-darkBorder rounded-2xl p-3.5 sm:p-4 flex flex-col max-h-[70vh] shadow-xs">
+              <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-app-darkBorder">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                  <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-800 dark:text-white">Direncanakan</h3>
+                </div>
+                <span id="kanban-count-planned" class="px-2 py-0.5 text-xs font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300">0</span>
+              </div>
+              <div id="kanban-planned-list" class="flex-1 overflow-y-auto space-y-2.5 custom-scrollbar pr-1"></div>
+            </div>
+
+            <!-- In Progress -->
+            <div class="bg-slate-50 dark:bg-[#111722] border border-app-lightBorder dark:border-app-darkBorder rounded-2xl p-3.5 sm:p-4 flex flex-col max-h-[70vh] shadow-xs">
+              <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-app-darkBorder">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+                  <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-800 dark:text-white">Dalam Produksi</h3>
+                </div>
+                <span id="kanban-count-progress" class="px-2 py-0.5 text-xs font-bold rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300">0</span>
+              </div>
+              <div id="kanban-progress-list" class="flex-1 overflow-y-auto space-y-2.5 custom-scrollbar pr-1"></div>
+            </div>
+
+            <!-- Completed -->
+            <div class="bg-slate-50 dark:bg-[#111722] border border-app-lightBorder dark:border-app-darkBorder rounded-2xl p-3.5 sm:p-4 flex flex-col max-h-[70vh] shadow-xs">
+              <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-app-darkBorder">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-800 dark:text-white">Terbit / Selesai ✅</h3>
+                </div>
+                <span id="kanban-count-completed" class="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">0</span>
+              </div>
+              <div id="kanban-completed-list" class="flex-1 overflow-y-auto space-y-2.5 custom-scrollbar pr-1"></div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 3. TABLE VIEW -->
+        <div id="view-table" class="hidden">
+          <div class="bg-white dark:bg-[#111722] border border-app-lightBorder dark:border-app-darkBorder rounded-2xl overflow-hidden shadow-xs">
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 dark:bg-app-darkSurfaceLight border-b border-app-lightBorder dark:border-app-darkBorder text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                  <tr>
+                    <th class="px-3 sm:px-4 py-3">Tanggal</th>
+                    <th class="px-3 sm:px-4 py-3">Bulan</th>
+                    <th class="px-3 sm:px-4 py-3">Kategori</th>
+                    <th class="px-3 sm:px-4 py-3">Brand</th>
+                    <th class="px-3 sm:px-4 py-3">Judul Konten</th>
+                    <th class="px-3 sm:px-4 py-3">Format</th>
+                    <th class="px-3 sm:px-4 py-3 text-center">Status</th>
+                    <th class="px-3 sm:px-4 py-3 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body" class="divide-y divide-slate-100 dark:divide-app-darkBorder/60 text-slate-700 dark:text-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. ANALYTICS VIEW -->
+        <div id="view-analytics" class="hidden space-y-4 sm:space-y-6">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            
+            <div class="bg-white dark:bg-[#141C2A] border border-app-lightBorder dark:border-app-darkBorder rounded-2xl p-3.5 sm:p-5 shadow-xs">
+              <div class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold">Total Postingan</div>
+              <div id="analytics-total" class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1 sm:mt-2">0</div>
+              <div class="text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">12 Bulan Aktif</div>
+            </div>
+
+            <div class="bg-white dark:bg-[#141C2A] border border-app-lightBorder dark:border-app-darkBorder rounded-2xl p-3.5 sm:p-5 shadow-xs">
+              <div class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold">Tingkat Publikasi</div>
+              <div id="analytics-completed" class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1 sm:mt-2">0</div>
+              <div class="w-full bg-slate-100 dark:bg-app-darkSurfaceLight h-1.5 sm:h-2 rounded-full mt-2 overflow-hidden">
+                <div id="analytics-progress-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-[#141C2A] border border-app-lightBorder dark:border-app-darkBorder rounded-2xl p-3.5 sm:p-5 shadow-xs">
+              <div class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold">Fokus Brand</div>
+              <div id="analytics-top-brand" class="text-base sm:text-xl font-bold text-brand-600 dark:text-sky-400 mt-1 sm:mt-2 truncate">DJI / LiDAR</div>
+              <div class="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">Hardware & GNSS</div>
+            </div>
+
+            <div class="bg-white dark:bg-[#141C2A] border border-app-lightBorder dark:border-app-darkBorder rounded-2xl p-3.5 sm:p-5 shadow-xs">
+              <div class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold">Bulan Peak</div>
+              <div id="analytics-peak-month" class="text-base sm:text-xl font-bold text-purple-600 dark:text-purple-400 mt-1 sm:mt-2 truncate">Juni 2026</div>
+              <div class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Campaign</div>
+            </div>
+
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div class="bg-white dark:bg-[#141C2A] border border-app-lightBorder dark:border-app-darkBorder rounded-2xl p-4 sm:p-5 shadow-xs">
+              <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Distribusi Kategori Konten</h4>
+              <div id="analytics-category-breakdown" class="space-y-2.5"></div>
+            </div>
+            <div class="bg-white dark:bg-[#141C2A] border border-app-lightBorder dark:border-app-darkBorder rounded-2xl p-4 sm:p-5 shadow-xs">
+              <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Distribusi Brand & Hardware</h4>
+              <div id="analytics-brand-breakdown" class="space-y-2.5"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDE PANEL: "SCHEDULED" DAILY TIMELINE -->
+    <aside class="w-full md:w-80 lg:w-96 bg-slate-50 dark:bg-[#0E131D] border-t md:border-t-0 md:border-l border-app-lightBorder dark:border-app-darkBorder p-4 sm:p-6 flex flex-col justify-between z-10">
+      
+      <div class="space-y-4">
+        
+        <!-- Scheduled Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-app-lightBorder dark:border-app-darkBorder">
+          <div>
+            <h2 class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-tight">Daily Schedule</h2>
+            <p id="agenda-date-label" class="text-xs font-bold text-brand-600 dark:text-sky-400">8 February, 2026</p>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <button onclick="openNewPostModal(selectedDateStr)" title="Tambah untuk hari ini" class="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-brand-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-xs font-bold flex items-center gap-1 hover:bg-blue-100 transition cursor-pointer">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Add</span>
+            </button>
+
+            <button onclick="stepAgendaDay(-1)" title="Hari Sebelumnya" class="w-7 h-7 rounded-lg bg-white dark:bg-app-darkSurfaceLight border border-app-lightBorder dark:border-app-darkBorder flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 transition cursor-pointer">
+              <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="stepAgendaDay(1)" title="Hari Berikutnya" class="w-7 h-7 rounded-lg bg-white dark:bg-app-darkSurfaceLight border border-app-lightBorder dark:border-app-darkBorder flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 transition cursor-pointer">
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Agenda Timeline List -->
+        <div id="agenda-list" class="space-y-3 overflow-y-auto custom-scrollbar max-h-[420px] sm:max-h-[580px] pr-1">
+          <!-- Injected via JavaScript -->
+        </div>
+
+      </div>
+
+      <!-- Quick Metrics Summary -->
+      <div class="pt-3 mt-3 border-t border-app-lightBorder dark:border-app-darkBorder flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
+        <span>Bulan ini: <strong id="stat-month" class="text-slate-900 dark:text-white font-bold">0</strong> post</span>
+        <span>Selesai: <strong id="stat-completed" class="text-emerald-600 dark:text-emerald-400 font-bold">0</strong></span>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- BUFFER-STYLE POST COMPOSER / EVENT MODAL -->
+  <div id="modal-post" style="display: none;" onclick="onModalBackdropClick(event)" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div onclick="event.stopPropagation()" class="bg-white dark:bg-[#18202E] border border-slate-200 dark:border-slate-700 rounded-[20px] sm:rounded-[24px] w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 p-4 sm:p-6 space-y-3.5 max-h-[92vh] overflow-y-auto custom-scrollbar">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-700/80">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white dark:bg-[#111722] border border-slate-200 dark:border-slate-700 p-1 flex items-center justify-center shrink-0">
+            <img src="logo.png" alt="PT GIM" class="w-full h-full object-contain">
+          </div>
+          <div>
+            <h3 id="modal-title" class="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">Create Post</h3>
+            <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium">PT Geo Investama Mandiri</p>
+          </div>
+        </div>
+        <button type="button" onclick="closePostModal()" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white transition cursor-pointer">
+          <i data-lucide="x" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+        </button>
+      </div>
+
+      <!-- Buffer Platform Selector Buttons -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Pilih Channel / Platform</label>
+          <span class="text-[10px] text-brand-600 dark:text-blue-400 font-semibold" id="platform-count-label">1 Dipilih</span>
+        </div>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2">
+          
+          <button type="button" onclick="togglePlatform('Instagram')" id="btn-platform-Instagram" class="px-2.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold border flex items-center justify-center gap-1.5 transition cursor-pointer">
+            <span>📸</span> <span>Instagram</span>
+          </button>
+          
+          <button type="button" onclick="togglePlatform('LinkedIn')" id="btn-platform-LinkedIn" class="px-2.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold border flex items-center justify-center gap-1.5 transition cursor-pointer">
+            <span>💼</span> <span>LinkedIn</span>
+          </button>
+          
+          <button type="button" onclick="togglePlatform('YouTube')" id="btn-platform-YouTube" class="px-2.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold border flex items-center justify-center gap-1.5 transition cursor-pointer">
+            <span>📹</span> <span>YouTube</span>
+          </button>
+          
+          <button type="button" onclick="togglePlatform('TikTok')" id="btn-platform-TikTok" class="px-2.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold border flex items-center justify-center gap-1.5 transition cursor-pointer">
+            <span>🎵</span> <span>TikTok</span>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Modal Form -->
+      <form id="post-form" onsubmit="savePost(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="form-id">
+
+        <!-- Title / Content -->
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1">Judul / Caption Konten</label>
+          <textarea id="form-title" required rows="3" class="w-full bg-slate-50 dark:bg-[#111722] border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 sm:p-3 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-brand-500 font-medium" placeholder="Tuliskan topik konten atau ide post..."></textarea>
+        </div>
+
+        <!-- Date & Category -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-slate-700 dark:text-slate-300 font-bold">Tanggal Jadwal</label>
+              <div class="flex items-center gap-1 text-[10px]">
+                <button type="button" onclick="setQuickDate('today')" class="text-brand-600 dark:text-blue-400 font-bold hover:underline">Hari Ini</button>
+                <span class="text-slate-300 dark:text-slate-600">•</span>
+                <button type="button" onclick="setQuickDate('tomorrow')" class="text-slate-500 dark:text-slate-400 font-bold hover:underline">Besok</button>
+                <span class="text-slate-300 dark:text-slate-600">•</span>
+                <button type="button" onclick="setQuickDate('next_week')" class="text-slate-500 dark:text-slate-400 font-bold hover:underline">+7 Hari</button>
+              </div>
+            </div>
+            
+            <div class="relative flex items-center">
+              <input type="date" id="form-date" required class="w-full bg-slate-50 dark:bg-[#111722] border border-slate-200 dark:border-slate-700 rounded-xl pl-3 pr-9 py-2 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-brand-500 cursor-pointer">
+              <button type="button" onclick="openDatePicker()" class="absolute right-2 text-slate-400 hover:text-brand-500 p-1 cursor-pointer" title="Buka Kalender">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1">Kategori Konten</label>
+            <select id="form-category" class="w-full bg-slate-50 dark:bg-[#111722] border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-brand-500 cursor-pointer">
+              <option value="Promo">🟠 Promo / Iklan Produk</option>
+              <option value="Education">🔵 Education / Tips Tech</option>
+              <option value="Holiday">🔴 Holiday / Greeting</option>
+              <option value="Webinar">🟣 Webinar / Pelatihan</option>
+              <option value="Product">🟢 Spesifikasi Hardware</option>
+              <option value="Event">🟤 Event & Liputan</option>
+              <option value="Other">⚪ Lainnya</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- Brand & Format -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1">Brand / Produk</label>
+            <input type="text" id="form-brand" placeholder="DJI, Topcon, Satlab, Leica..." class="w-full bg-slate-50 dark:bg-[#111722] border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-brand-500">
+          </div>
+          <div>
+            <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1">Format Post</label>
+            <select id="form-format" class="w-full bg-slate-50 dark:bg-[#111722] border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-brand-500 cursor-pointer">
+              <option value="Feed / Post">Feed / Single Image</option>
+              <option value="Video / Reels">Video / Reels / Short</option>
+              <option value="Carousel">Carousel / Slides</option>
+              <option value="Webinar / Training">Workshop / Live</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div>
+          <label class="block text-slate-700 dark:text-slate-300 font-bold mb-1">Status Publikasi</label>
+          <select id="form-status" class="w-full bg-slate-50 dark:bg-[#111722] border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-brand-500 cursor-pointer">
+            <option value="Planned">📝 Planned (Direncanakan)</option>
+            <option value="In Progress">⏳ In Production (Proses Desain/Video)</option>
+            <option value="Completed">✅ Published (Sudah Terbit)</option>
+          </select>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-2.5 border-t border-slate-100 dark:border-slate-700/80 flex items-center justify-between">
+          <button type="button" id="btn-delete-post" onclick="deleteCurrentPost()" class="px-3 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl font-bold transition cursor-pointer">
+            Hapus Post
+          </button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closePostModal()" class="px-3.5 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold transition cursor-pointer">
+              Batal
+            </button>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold shadow-buffer-btn transition cursor-pointer">
+              Simpan Jadwal
+            </button>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50 px-4 py-3 rounded-2xl shadow-2xl border text-xs font-bold flex items-center gap-2.5 bg-slate-900 text-white dark:bg-slate-800 dark:text-white border-slate-700 transform transition duration-300 translate-y-20 opacity-0 pointer-events-none">
+    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toast-msg">Notification</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="calendar_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
