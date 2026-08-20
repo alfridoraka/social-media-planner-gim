@@ -1,7 +1,7 @@
 // State Management
 const STORAGE_KEY = "gim_social_calendar_2026_data";
 const THEME_STORAGE_KEY = "gim_calendar_theme";
-const GOOGLE_SHEET_WRITE_URL = "https://script.google.com/macros/s/AKfycbxcSECf9zejws6RlXNasAidklNvxde2zV3EbWABm1Oe/exec";
+const GOOGLE_SHEET_WRITE_URL = "https://script.google.com/macros/s/AKfycbwhMPe-yYnjBZCog9capvA_o81lZOhvs6CAA4iwd7X61gcXosRq95EQLTdTBnPA5Zk_XQ/exec";
 const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1z-6GqeczVfQZLmsmBtCvuv1fMH9FRiGCa9FKX1Klwu4/export?format=csv";
 
 // Hari Libur Nasional & Cuti Bersama Indonesia 2026 (SKB 3 Menteri)
